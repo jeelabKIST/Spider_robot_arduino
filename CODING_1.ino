@@ -1,11 +1,11 @@
-int motor_speed = 120;//*** 거미로봇 속도 (120~220 정도로 설정) (낮을수록 느리고, 높을수록 빠름)
-int lr_speed_up = 20;//***  거미로봇 좌회 우회 속도만 좀더 빠르게 하고싶을때 (좌우회전이 로봇 구조상 전후진보다 힘이더듬)
+int motor_speed = 120;//*** Speed of the robot (120~220 is appropriate; larger the number, faster the robot)
+int lr_speed_up = 20;//*** To set turning speed separately (eg. faster than the motor_seed)
 
 
-int move_time = 10;//*** 거미로봇 동작시간 (초)
-int break_time = 10;//*** 거미로봇 휴식시간 (초)
+int move_time = 10;//*** Length of one moving time (seconds)
+int break_time = 10;//*** Length of the pause time (seconds)
 
-int move_mode = 1;//*** 0 = 패턴동작 , 1 = 랜덤동작
+int move_mode = 1;//*** Movement type: 0 = Patterned movement, 1 = Random movement
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
@@ -37,32 +37,28 @@ void setup() {
 
   randomSeed(analogRead(A0));
 
-  delay(5000);//5초 휴식
-  Serial.println("loop 실행");
+  delay(5000);//Rest for 5 seconds
+  Serial.println("Start executing the loop");
 }
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
 void loop() {
-
-
-
   currentMillis = millis();
   if (currentMillis - lastMillis >= 100) {
     lastMillis = currentMillis;
   }
 
-
-
-  if (move_mode == 0) {//패턴동작 모드
+  if (move_mode == 0) {//Patterned movement mode
     move_pattern();
     if (run_time > move_time) {
       Serial.println("");
+      Serial.print("Moved over ");
       Serial.print(move_time);
-      Serial.println("초 이상 움직였습니다.");
+      Serial.println(" seconds.");
+      Serial.print("Resting for ");
       Serial.print(break_time);
-      Serial.println("초 휴식합니다.");
-      Serial.println("");
+      Serial.println(" seconds.");
       for (int i = 0; i < break_time; i++) {
         Serial.print(".");
         delay(1000);
@@ -70,15 +66,16 @@ void loop() {
       Serial.println("");
       run_time = 0;
     }
-  } else {//랜덤동작 모드
+  } else {//Random movement mode
     random_pattern();
     if (run_time > move_time) {
       Serial.println("");
+      Serial.print("Moved over ");
       Serial.print(move_time);
-      Serial.println("초 이상 움직였습니다.");
+      Serial.println(" seconds.");
+      Serial.print("Resting for ");
       Serial.print(break_time);
-      Serial.println("초 휴식합니다.");
-      Serial.println("");
+      Serial.println(" seconds.");
       for (int i = 0; i < break_time; i++) {
         Serial.print(".");
         delay(1000);
@@ -87,9 +84,6 @@ void loop() {
       run_time = 0;
     }
   }
-
-
-
 }
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
@@ -97,13 +91,13 @@ void loop() {
 void random_pattern() {
   start_time = millis();
 
-  int move_time_r = random(5, 30);//*** 랜덤 움직임 시간 (0.5초 ~ 3.0초사이 랜덤)
-  int stay_time_r = random(1, 10);//*** 랜덤 움직임 후 정지 시간 (0.1초 ~ 1.0초사이 랜덤)
+  int move_time_r = random(5, 30);//*** Length of random movement (0.5 ~ 3.0 seconds)
+  int stay_time_r = random(1, 10);//*** Length of pause after random movement (0.1 ~ 1.0 second)
 
   //motor_speed = random(100, 200);
 
-  int r = random(1, 6);//1~5의값을 r변수에 저장
-  // 랜덤값 r에 따라 전진 후진 좌회 우회 정지 중에서 선택
+  int r = random(1, 6);// set 'r' as random integer from [1, 5]
+  // Choose movement type based on the value in 'r' (among go, back, right, left & stay)
   if (r == 1) {
     go(motor_speed, move_time_r, stay_time_r);
   } else if (r == 2) {
@@ -119,12 +113,12 @@ void random_pattern() {
   end_time = millis();
   run_time = run_time + ((end_time - start_time) / 1000.0);
   run_count++;
-  Serial.print("----- ----- 실행횟수 : ");
+  Serial.print("----- ----- Num. Iteration : ");
   Serial.print(run_count);
 
-  Serial.print("     실행시간 : ");
+  Serial.print("     Running time : ");
   Serial.print(run_time);
-  Serial.println("초");
+  Serial.println("s");
 }
 
 void move_pattern() {
@@ -141,22 +135,22 @@ void move_pattern() {
   end_time = millis();
   run_time = run_time + ((end_time - start_time) / 1000.0);
   run_count++;
-  Serial.print("----- ----- 실행횟수 : ");
+  Serial.print("----- ----- Num. Iteration : ");
   Serial.print(run_count);
 
-  Serial.print("     실행시간 : ");
+  Serial.print("     Rurnning time : ");
   Serial.print(run_time);
-  Serial.println("초");
+  Serial.println("s");
 }
 
 // ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- ----- -----
 
-void go(int k, int i, int j) { //거미로봇 전진
+void go(int k, int i, int j) { //Robot move forward
   motor_speed = k;
 
-  Serial.print("전진: ");
+  Serial.print("Move forward: ");
   Serial.print(i * 100.0 / 1000.0);
-  Serial.println("(초)");
+  Serial.println("(s)");
 
   analogWrite(motor_1, 0);
   analogWrite(motor_2, motor_speed);
@@ -165,12 +159,12 @@ void go(int k, int i, int j) { //거미로봇 전진
   delay(i * 100);
   stay(j);
 }
-void back(int k, int i, int j) { //거미로봇 후진
+void back(int k, int i, int j) { //Robot move backward
   motor_speed = k;
 
-  Serial.print("후진: ");
+  Serial.print("Move backward: ");
   Serial.print(i * 100.0 / 1000.0);
-  Serial.println("(초)");
+  Serial.println("(s)");
 
   analogWrite(motor_1, motor_speed);
   analogWrite(motor_2, 0);
@@ -179,12 +173,12 @@ void back(int k, int i, int j) { //거미로봇 후진
   delay(i * 100);
   stay(j);
 }
-void right(int k, int i, int j) { //거미로봇 제자리 우회전
+void right(int k, int i, int j) { //Robot turn right
   motor_speed = k;
 
-  Serial.print("우회: ");
+  Serial.print("Turn right: ");
   Serial.print(i * 100.0 / 1000.0);
-  Serial.println("(초)");
+  Serial.println("(s)");
 
   analogWrite(motor_1, 0);
   analogWrite(motor_2, motor_speed + lr_speed_up);
@@ -193,12 +187,12 @@ void right(int k, int i, int j) { //거미로봇 제자리 우회전
   delay(i * 100);
   stay(j);
 }
-void left(int k, int i, int j) { //거미로봇 제자리 좌회전
+void left(int k, int i, int j) { //Robot turn left
   motor_speed = k;
 
-  Serial.print("좌회: ");
+  Serial.print("Trun left: ");
   Serial.print(i * 100.0 / 1000.0);
-  Serial.println("(초)");
+  Serial.println("(s)");
 
   analogWrite(motor_1, motor_speed + lr_speed_up);
   analogWrite(motor_2, 0);
@@ -207,10 +201,10 @@ void left(int k, int i, int j) { //거미로봇 제자리 좌회전
   delay(i * 100);
   stay(j);
 }
-void stay(int i) {//거미로봇 정지
-  Serial.print("정지: ");
+void stay(int i) {//Robot stop
+  Serial.print("Stop: ");
   Serial.print(i * 100.0 / 1000.0);
-  Serial.println("(초)");
+  Serial.println("(s)");
 
   analogWrite(motor_1, 0);
   analogWrite(motor_2, 0);
